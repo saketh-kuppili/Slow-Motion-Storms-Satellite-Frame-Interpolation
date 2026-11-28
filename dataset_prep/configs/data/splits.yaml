@@ -1,0 +1,14 @@
+# Event-level split (spec 5.5). Each storm is assigned whole to one split and
+# the assignment is frozen before any model is trained. Neighbouring 1-minute
+# frames are nearly identical, so splitting by frame would leak near-copies of
+# test images into training.
+#
+# If a candidate fails verification, replace it with a same-type backup here
+# and record the change; the build refuses unknown or doubly assigned events.
+train: [E01, E02, E03, E05, E07]
+validation: [E06, E08]
+# E10 failed coverage verification (storm left the M2 sector in the last hour);
+# replaced by the same-type backup B05 (see docs/decisions.md, D-005).
+# G01 (GOES-19, 2026-04-17) is an additional, independent test event selected by the
+# fixed rule of D-014 to keep the GOES-16 -> GOES-19 generalisation experiment.
+test: [E04, E09, B05, G01]

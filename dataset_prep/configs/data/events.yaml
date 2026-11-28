@@ -1,0 +1,172 @@
+# =============================================================================
+# Candidate storm events (spec 5.2). None is assumed valid: `sms events tracks`
+# derives each storm's position and 6-hour window from public NOAA records, and
+# `sms events verify` checks real mesoscale coverage before any bulk download.
+#
+# Hurricanes: positions and intensities come from NHC's HURDAT2 best track.
+#   The window is the 6 hours ending at the first intensity peak inside the
+#   search interval (spec 5.2: "placed during intensification").
+# Convective events: positions come from SPC's filtered storm reports for the
+#   convective day (12 UTC to 12 UTC). The window is the 6-hour span with the
+#   most reports; the track is the hourly median report position.
+# =============================================================================
+
+sources:
+  hurdat2_url: https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2025-092326.txt
+  spc_reports_url_template: https://www.spc.noaa.gov/climo/reports/{yymmdd}_rpts_filtered.csv
+
+events:
+  - id: E01
+    name: Midwest derecho (Iowa, Illinois)
+    type: derecho
+    satellite: goes16
+    track: {source: spc, convective_day: 2020-08-10}
+
+  - id: E02
+    name: Hurricane Ida, Louisiana landfall
+    type: hurricane
+    satellite: goes16
+    track: {source: hurdat2, storm_name: IDA, season: 2021,
+            search_start: 2021-08-29T00:00Z, search_end: 2021-08-30T00:00Z}
+
+  - id: E03
+    name: Mayfield, Kentucky tornado outbreak
+    type: tornado_outbreak
+    satellite: goes16
+    track: {source: spc, convective_day: 2021-12-10}
+
+  - id: E04
+    name: Northern Plains derecho (South Dakota, Minnesota)
+    type: derecho
+    satellite: goes16
+    track: {source: spc, convective_day: 2022-05-12}
+
+  - id: E05
+    name: Hurricane Ian, southwest Florida landfall
+    type: hurricane
+    satellite: goes16
+    track: {source: hurdat2, storm_name: IAN, season: 2022,
+            search_start: 2022-09-28T00:00Z, search_end: 2022-09-29T00:00Z}
+
+  - id: E06
+    name: Rolling Fork, Mississippi supercell
+    type: tornado_outbreak
+    satellite: goes16
+    track: {source: spc, convective_day: 2023-03-24}
+
+  - id: E07
+    name: Nebraska-Iowa tornado outbreak
+    type: tornado_outbreak
+    satellite: goes16
+    track: {source: spc, convective_day: 2024-04-26}
+
+  - id: E08
+    name: Hurricane Helene, Florida Big Bend landfall
+    type: hurricane
+    satellite: goes16
+    track: {source: hurdat2, storm_name: HELENE, season: 2024,
+            search_start: 2024-09-26T00:00Z, search_end: 2024-09-27T06:00Z}
+
+  - id: E09
+    name: Hurricane Milton, Gulf intensification
+    type: hurricane
+    satellite: goes16
+    track: {source: hurdat2, storm_name: MILTON, season: 2024,
+            search_start: 2024-10-07T00:00Z, search_end: 2024-10-10T06:00Z}
+
+  - id: E10
+    name: Midwest-Kentucky tornado outbreak
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2025-05-16}
+
+# Same-type replacements, used only if a candidate fails verification (spec 5.2).
+backups:
+  - id: B01
+    name: Hurricane Laura, Louisiana landfall
+    type: hurricane
+    satellite: goes16
+    track: {source: hurdat2, storm_name: LAURA, season: 2020,
+            search_start: 2020-08-26T00:00Z, search_end: 2020-08-27T12:00Z}
+
+  - id: B02
+    name: Hurricane Idalia, Florida Big Bend landfall
+    type: hurricane
+    satellite: goes16
+    track: {source: hurdat2, storm_name: IDALIA, season: 2023,
+            search_start: 2023-08-29T12:00Z, search_end: 2023-08-30T18:00Z}
+
+  - id: B03
+    name: Hurricane Beryl, Texas landfall
+    type: hurricane
+    satellite: goes16
+    track: {source: hurdat2, storm_name: BERYL, season: 2024,
+            search_start: 2024-07-07T12:00Z, search_end: 2024-07-08T18:00Z}
+
+  - id: B04
+    name: Greenfield, Iowa tornado
+    type: tornado_outbreak
+    satellite: goes16
+    track: {source: spc, convective_day: 2024-05-21}
+
+  - id: B05
+    name: March 2025 central US outbreak
+    type: tornado_outbreak
+    satellite: goes16
+    track: {source: spc, convective_day: 2025-03-14}
+
+  - id: B06
+    name: 2025-05-30 sample day
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2025-05-30}
+
+  # ---------------------------------------------------------------------------
+  # GOES-19 test-event candidates (docs/decisions.md, D-014). Rule fixed before
+  # any coverage check: tornado-outbreak convective days from 2025-04-08 (first
+  # day without GOES-16 mesoscale data) to 2026-11-22, ranked by SPC filtered
+  # tornado reports (`sms events rank-days`, data/manifest/
+  # goes19_convective_day_ranking.csv). Days already verified as failing
+  # (E10 2025-05-16, B06 2025-05-30) are skipped. Candidates are verified in rank
+  # order with the unchanged rules; the first that passes becomes an additional,
+  # independent test event. No existing event or split assignment changes.
+  - id: G01
+    name: GOES-19 candidate, SPC tornado rank 1 (2026-04-17)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2026-04-17}
+  - id: G02
+    name: GOES-19 candidate, SPC tornado rank 2 (2026-06-21)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2026-06-21}
+  - id: G03
+    name: GOES-19 candidate, SPC tornado rank 3 (2026-06-11)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2026-06-11}
+  - id: G04
+    name: GOES-19 candidate, SPC tornado rank 4 (2026-03-15)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2026-03-15}
+  - id: G05
+    name: GOES-19 candidate, SPC tornado rank 5 (2025-05-18)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2025-05-18}
+  - id: G06
+    name: GOES-19 candidate, SPC tornado rank 6 (2026-03-11)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2026-03-11}
+  - id: G07
+    name: GOES-19 candidate, SPC tornado rank 8 (2026-06-17)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2026-06-17}
+  - id: G08
+    name: GOES-19 candidate, SPC tornado rank 9 (2026-07-21)
+    type: tornado_outbreak
+    satellite: goes19
+    track: {source: spc, convective_day: 2026-07-21}

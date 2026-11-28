@@ -1,0 +1,78 @@
+# =============================================================================
+# Slow-Motion Storms: dataset specification (Phase 1)
+#
+# Every number that controls the data pipeline lives here, not in the code.
+# Units are part of each key name (_s = seconds, _K = kelvin, _px = pixels).
+# The design specification (docs/superpowers/specs/2026-11-16-...) and the
+# workflow report are the sources of truth; comments cite the section that
+# fixes each value.
+# =============================================================================
+
+dataset:
+  name: sms-goes-abi-c13
+  processing_version: "1.0.0"
+
+instrument:
+  orbital_slot: GOES-East            # checked against every file's global attribute
+  product: ABI-L1b-RadM               # L1b radiances, mesoscale sectors (spec 5.1)
+  reference_product: ABI-L2-CMIPM     # NOAA brightness-temperature product used only to validate calibration
+  sectors: [M1, M2]
+  bands: [13]                         # 10.3 um IR window. Add 8 (6.2 um water vapour) later without code changes.
+  nominal_cadence_s: 60               # ABI Mode 6 mesoscale refresh, per sector
+
+calibration:
+  max_abs_diff_vs_noaa_K: 0.05        # spec 5.3: tolerance against NOAA CMIP
+  check_every_nth_scan: 15            # validate one scan in every N processed scans
+  physical_range_K: [150.0, 345.0]    # sanity bounds for reporting only; values are never clipped
+
+quality:
+  usable_dqf: [0]                     # spec 5.3: DQF != 0 is excluded from every loss and metric
+  expected_shape_px: [500, 500]       # Band 13 mesoscale sector at 2 km (verified on real files)
+
+segments:
+  # A segment is a maximal run of scans on one identical fixed grid. It is cut
+  # where the sector moves (grid or projection change) or where the archive has
+  # a hole longer than max_gap_s. Shorter holes are kept inside the segment and
+  # recorded; windows never span them (see windows.cadence_tolerance_s).
+  max_gap_s: 300
+
+windows:
+  gaps_min: [10]                      # endpoint separation. Spec 5.4 also allows 20 and 30 (evaluation only).
+  cadence_tolerance_s: 15             # each consecutive core interval must be 60 +/- 15 s (no missing scan)
+  endpoint_gap_tolerance_s: 20        # |(t_end - t_start) - gap| tolerance
+  hidden_time_tolerance: 0.02         # |t_k - k/n| tolerance on the normalised time of each hidden frame
+  context_offset_gaps: [-1, 2]        # spec 5.4: one gap before I0 (I_-1) and one gap after I1 (I_2)
+  context_tolerance_s: 15             # a context frame must lie within this distance of its nominal time (same as cadence tolerance)
+  stride_min: 5                       # spec 5.4: windows start every 5 minutes
+
+patches:
+  size_px: 256
+  per_window: 4                       # one cold-centred crop (if any cold cloud) plus seeded random crops
+  min_core_valid_fraction: 1.0        # every pixel of every core frame must be valid inside a patch
+  cold_threshold_K: 220.0
+  max_random_tries: 50
+  seed: 20261116
+
+normalization:
+  method: fixed_affine                # spec 5.3: x = (T - offset) / scale, applied at load time
+  offset_K: 180.0
+  scale_K: 140.0
+  report_zscore_from_split: train     # data-dependent statistics are fitted on training events only
+
+coverage:                             # spec 5.2: event verification
+  window_hours: 6
+  edge_margin_px: 64
+  cold_threshold_K: 220.0
+  min_cold_fraction: 0.02
+  max_listing_gap_s: 120
+  min_gap_ok_fraction: 0.80
+  min_hour_pass_fraction: 1.0         # every hourly sample must pass checks 1 and 2
+
+splits:
+  file: configs/data/splits.yaml
+  min_event_separation_hours: 24      # events in different splits must be at least this far apart in time
+
+pilot:                                # small real-data slice run before the full download (D-011)
+  events: [E05, E06, B05]             # one per split; E05 = 30-second imaging, B05 = sector move
+  offset_min: 150                     # minutes after each verified window start
+  duration_min: 45                    # 45 min allows 10-min windows with both context frames

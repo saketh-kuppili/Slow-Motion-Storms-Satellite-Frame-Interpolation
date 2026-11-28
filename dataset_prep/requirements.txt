@@ -1,0 +1,11 @@
+# Runtime dependencies (mirrors pyproject.toml).
+numpy>=1.26
+netCDF4>=1.6
+PyYAML>=6.0
+requests>=2.31
+matplotlib>=3.8
+s3fs>=2024.2
+pyproj>=3.6
+
+# Tests
+pytest>=8.0

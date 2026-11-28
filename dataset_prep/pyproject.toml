@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slow-motion-storms"
+version = "0.6.0"
+description = "Data pipeline for temporal interpolation of GOES ABI Band 13 infrared imagery (Phases 1-4: data milestone)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "netCDF4>=1.6",
+    "PyYAML>=6.0",
+    "requests>=2.31",
+    "matplotlib>=3.8",
+    "s3fs>=2024.2",   # anonymous access to NOAA's public S3 buckets
+    "pyproj>=3.6",    # GOES fixed-grid (geostationary) navigation
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+sms = "sms.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+    "network: test needs internet access to the public NOAA archive (deselect with -m 'not network')",
+]

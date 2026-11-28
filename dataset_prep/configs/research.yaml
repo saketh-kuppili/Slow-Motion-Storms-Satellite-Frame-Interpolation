@@ -1,0 +1,41 @@
+# Research objectives and experimental specification (Phase 1).
+# Transcribed from the approved design specification (2026-11-16) and the
+# workflow report; section numbers refer to the design specification.
+
+research_question: >
+  Can modern frame-interpolation networks, adapted and fine-tuned for
+  single-channel infrared satellite imagery, reconstruct the nine real
+  1-minute GOES ABI Band 13 frames between two observations 10 minutes apart?
+  And can a storm-aware correction network that learns temperature change
+  improve the reconstruction of rapidly evolving storm regions?
+
+hypotheses:
+  - id: H1
+    statement: Fine-tuned interpolation networks reconstruct hidden frames with lower brightness-temperature error than linear blending and optical-flow warping.
+  - id: H2
+    statement: Brightness-temperature change along cloud paths is curved in time during deep convection, so four observations (I_-1, I_0, I_1, I_2) predict hidden frames better than two.
+  - id: H3
+    statement: A storm-aware correction of the base interpolator reduces error in rapidly changing regions without degrading the rest of the image.
+
+task:
+  input: two Band 13 observations I_0 and I_1 about 10 minutes apart, optionally context frames I_-1 and I_2
+  target: the nine real intermediate observations, at normalised times t_k computed from actual scan times
+  units: kelvin (brightness temperature)
+
+endpoints:            # spec 7; fixed before any training
+  primary: rapid-change MAE (K) at the 10-minute gap
+  secondary: [overall BT MAE (K), temporal-difference error (K/min), overshooting-top F1, cold-region IoU (220 K), PSNR, SSIM]
+
+data_milestone_deliverables:   # what Phases 1-4 must hand to Phase 5
+  - verified storm events with derived windows and positions
+  - manifest of every downloaded file with SHA-256
+  - calibrated brightness temperatures validated against NOAA CMIP
+  - spatially aligned segments with quality masks
+  - windows of 11 real frames (+ real context frames where available) with actual timestamps
+  - 256 x 256 patch index, event-level splits, reversible normalisation
+  - an independent validation report
+
+non_goals:
+  - operational forecasting or real-time ingestion
+  - reprojection or resampling of the native ABI grid
+  - filling missing ground-truth observations

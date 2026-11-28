@@ -1,0 +1,73 @@
+# --- Data (downloaded or derived; re-creatable from the committed manifest) ---
+data/*
+!data/manifest/
+!data/sample/
+data_goes/
+*.nc
+!data/sample/*.nc
+*.DAT
+*.DAT.bz2
+*.npy
+*.npz
+
+# --- Research papers and other PDFs dropped into the repository root ---
+/*.pdf
+
+# --- Model weights and checkpoints (later phases) ---
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.pkl
+*.safetensors
+*.onnx
+
+# --- Python environments and caches ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- LaTeX build products (the final PDFs in docs/pdf/ are kept) ---
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lol
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+docs/latex/**/*.log
+docs/latex/**/*.pdf
+docs/latex/build*/
+
+# --- Editors, OS and temporary files ---
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+*.tmp
+*.part
+tmp/
+
+# --- Local archive of superseded documentation ---
+docs/archive/
+
+# --- Local backup of the pre-refactor implementation ---
+backup/
